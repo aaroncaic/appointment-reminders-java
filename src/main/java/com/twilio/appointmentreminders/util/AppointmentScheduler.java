@@ -13,6 +13,10 @@ import org.quartz.JobExecutionException;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import java.net.URI;
+import java.net.URISyntaxException;
+import com.twilio.rest.api.v2010.account.Call;
+
 import javax.persistence.EntityManagerFactory;
 
 public class AppointmentScheduler implements Job {
@@ -46,16 +50,24 @@ public class AppointmentScheduler implements Job {
       String phoneNumber = appointment.getPhoneNumber();
       String date = appointment.getDate();
       String messageBody = "Remember: " + name + ", on " + date + " you have an appointment!";
-
       try {
-        Message message = Message
-                .creator(new PhoneNumber(phoneNumber), new PhoneNumber(TWILIO_NUMBER), messageBody)
-                .create();
-        System.out.println("Message sent! Message SID: " + message.getSid());
-      } catch(TwilioException e) {
-        logger.error("An exception occurred trying to send the message \"{}\" to {}." +
+        Call call = Call.creator(new PhoneNumber(phoneNumber), new PhoneNumber(TWILIO_NUMBER),
+          new URI("https://handler.twilio.com/twiml/EH63e44ecd570d406b05cf1b38175ca5e8?Name="+name.substring(0,5))).create();
+
+        System.out.println("Call sent! Call SID: " + call.getSid());
+      } catch(URISyntaxException e) {
+        logger.error("An exception occurred trying to send the call \"{}\" to {}." +
                 " \nTwilio returned: {} \n", messageBody, phoneNumber, e.getMessage());
       }
+      // try {
+      //   Message message = Message
+      //           .creator(new PhoneNumber(phoneNumber), new PhoneNumber(TWILIO_NUMBER), messageBody)
+      //           .create();
+      //   System.out.println("Message sent! Message SID: " + message.getSid());
+      // } catch(TwilioException e) {
+      //   logger.error("An exception occurred trying to send the message \"{}\" to {}." +
+      //           " \nTwilio returned: {} \n", messageBody, phoneNumber, e.getMessage());
+      // }
 
 
     }
